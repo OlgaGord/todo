@@ -27,6 +27,30 @@ namespace TodoApi.Controllers
 
             }
         }
+
+
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
+        {
+            IQueryable<TodoItem> todoItemsQ =
+            (from td in _context.TodoItems orderby td.IsComplete select td);
+
+            return await _context.TodoItems.ToListAsync();
+            var items = await todoItemsQ.AsNoTracking().ToListAsync();
+            return items;
+
+            // return await _context.TodoItems.ToListAsync();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem item)
+        {
+            _context.TodoItems.Add(item);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetTodoItem), new { id = item.Id }, item);
+        }
+
         [HttpPatch("{id}")]
         public async Task<IActionResult> PatchTodoItem(long id, TodoItem item)
         {
@@ -45,23 +69,6 @@ namespace TodoApi.Controllers
             _context.Update(todoItem);
             await _context.SaveChangesAsync();
             return NoContent();
-
-        }
-
-
-
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
-        {
-            return await _context.TodoItems.ToListAsync();
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem item)
-        {
-            _context.TodoItems.Add(item);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetTodoItem), new { id = item.Id }, item);
         }
 
         [HttpDelete("{id}")]

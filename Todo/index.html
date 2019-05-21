@@ -4,59 +4,69 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
     <title>Todo</title>
   </head>
   <body>
     <h1>Things ToDo</h1>
-    <div id="tasklist"></div>
     <div>
       <input type="text" id="tdName" />
       <button id="tdAdd">Add Task</button>
     </div>
+    <div id="tasklist"></div>
 
     <script type="application/javascript">
       const elTasks = document.getElementById("tasklist");
 
-      let getTododos = async () => {
+      let getTodos = async () => {
         elTasks.innerHTML = "";
-      };
-
-      (async () => {
-        const addBtn = document.getElementById("tdAdd");
-        addBtn.addEventListener("click", () => {
-          const tdText = document.getElementById("tdName");
-
-          console.log(tdText.value);
-
-          let data = { name: tdText.value, isComplete: false };
-        });
-
         const itemsRaw = await fetch("https://localhost:5001/api/todo/", {
           cache: "no-cache",
           method: "GET"
         });
+
         const items = await itemsRaw.json();
 
         items.forEach(tdi => {
-          const elTDi = document.createElement("div");
+          const elTdi = document.createElement("div");
+          elTdi.id = tdi.id;
 
-          elTDi.id = tdi.id;
-
-          elTDi.innerHTML =
-            '<input class="tdiCheck" type="checkbox" name="isComplete"' +
+          elTdi.innerHTML =
+            '<input class="tdiCheck" type="checkbox" name="isComplete" ' +
             (tdi.isComplete ? "checked" : "") +
-            'value="isComplete" />' +
-            "<span>" +
-            tdi.name +
-            "</span>";
-          elTasks.appendChild(elTDi);
+            ' value="isComplete" />' +
+            '<span class="delete">X</span>' +
+            "  " +
+            `<span>${tdi.name}</span>`;
+
+          elTasks.appendChild(elTdi);
+        });
+
+        let elsDels = document.querySelectorAll(".delete");
+
+        elsDels.forEach(el => {
+          el.addEventListener("click", async () => {
+            let id = el.parentElement.id;
+            const deleteResult = await fetch(
+              "https://localhost:5001/api/todo/" + id,
+              {
+                method: "DELETE",
+                headers: {
+                  Accept: "application/json",
+                  "Content-type": "application/json"
+                }
+              }
+            );
+            getTodos();
+          });
         });
 
         let elsChecks = document.querySelectorAll(".tdiCheck");
 
         elsChecks.forEach(el => {
           el.addEventListener("click", async e => {
-            console.log(el, el.parentElement.id);
+            console.log(el, el.parentElement.id, el.checked);
+
             const itemsRaw = await fetch(
               "https://localhost:5001/api/todo/" + el.parentElement.id,
               {
@@ -65,6 +75,7 @@
                   Accept: "application/json",
                   "Content-Type": "application/json"
                 },
+
                 body: JSON.stringify({
                   id: el.parentElement.id,
                   isComplete: el.checked
@@ -75,7 +86,27 @@
         });
 
         console.log(items);
-      })();
+      };
+
+      getTodos();
+
+      const addBtn = document.getElementById("tdAdd");
+      addBtn.addEventListener("click", async () => {
+        const tdText = document.getElementById("tdName");
+
+        let data = { name: tdText.value, isComplete: false };
+
+        await fetch("https://localhost:5001/api/todo", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+
+        getTodos();
+      });
     </script>
   </body>
 </html>

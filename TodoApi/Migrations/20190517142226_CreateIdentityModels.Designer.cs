@@ -8,7 +8,7 @@ using TodoApi.Models;
 namespace TodoApi.Migrations
 {
     [DbContext(typeof(TodoContext))]
-    [Migration("20190517142308_CreateIdentityModels")]
+    [Migration("20190517142226_CreateIdentityModels")]
     partial class CreateIdentityModels
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
